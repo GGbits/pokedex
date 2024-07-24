@@ -36,7 +36,7 @@ func commandHelp() error {
 
 func commandExit() error {
 	os.Exit(0)
-	return fmt.Errorf("could not exit properly.")
+	return nil
 }
 
 func main() {
