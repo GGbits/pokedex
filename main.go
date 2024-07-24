@@ -7,24 +7,23 @@ import (
 	"os"
 )
 
+var nextMap string = "https://pokeapi.co/api/v2/location/"
+var prevMap string
+
 type cliCommand struct {
 	name        string
 	description string
 	callback    func() error
 }
 
-func commandHelp() error {
-	fmt.Println("\nWelcome to the Pokedex!\nUsage:")
-	fmt.Println()
-	for _, c := range getCommands() {
-		fmt.Printf("%v: %v\n", c.name, c.description)
-	}
-	return nil
-}
-
-func commandExit() error {
-	os.Exit(0)
-	return nil
+type pokeLocationResult struct {
+	Count    int    `json:"count"`
+	Next     string `json:"next"`
+	Previous any    `json:"previous"`
+	Results  []struct {
+		Name string `json:"name"`
+		URL  string `json:"url"`
+	} `json:"results"`
 }
 
 func main() {
@@ -45,20 +44,5 @@ func main() {
 			}
 		}
 		fmt.Printf("\n\nPokedex > ")
-	}
-}
-
-func getCommands() map[string]cliCommand {
-	return map[string]cliCommand{
-		"help": {
-			name:        "help",
-			description: "Displays a help message",
-			callback:    commandHelp,
-		},
-		"exit": {
-			name:        "exit",
-			description: "Exit the Pokedex",
-			callback:    commandExit,
-		},
 	}
 }
