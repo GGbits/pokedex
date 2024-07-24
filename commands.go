@@ -1,10 +1,7 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 )
 
@@ -23,37 +20,41 @@ func commandHelp() error {
 }
 
 func commandMap() error {
-	//TODO: commandMap functionality
-	res, err := http.Get(nextMap)
+	webResult, err := getApiResponse(nextMap)
 	if err != nil {
-		return err
+		return fmt.Errorf("an error occured while getting API response: %s", err)
 	}
-	defer res.Body.Close()
-	body, err := io.ReadAll(res.Body)
+	plResult, err := unmarshallPokeLocationResult(webResult)
 	if err != nil {
-		return err
-	}
-
-	if res.StatusCode > 299 {
-		return fmt.Errorf("Response failed with status code: %d and\nbody:%s\n", res.StatusCode, body)
-	}
-
-	plResult := pokeLocationResult{}
-	err = json.Unmarshal(body, &plResult)
-	if err != nil {
-		return fmt.Errorf("failed to convert json to location data: %s", err)
+		return fmt.Errorf("an error occured while serializing the json: %s", err)
 	}
 
 	for _, res := range plResult.Results {
 		println(res.Name)
 	}
-	prevMap = nextMap
+	prevMap = plResult.Previous
 	nextMap = plResult.Next
 	return nil
 }
 
 func commandMapb() error {
-	//TODO: commandMapb functionality
+	if prevMap == "" {
+		return fmt.Errorf("no previous location set exists. Please try using \"map\" at least twice before \"mapb\"")
+	}
+	webResult, err := getApiResponse(prevMap)
+	if err != nil {
+		return fmt.Errorf("an error occured while getting API response: %s", err)
+	}
+	plResult, err := unmarshallPokeLocationResult(webResult)
+	if err != nil {
+		return fmt.Errorf("an error occured while serializing the json: %s", err)
+	}
+
+	for _, res := range plResult.Results {
+		println(res.Name)
+	}
+	prevMap = plResult.Previous
+	nextMap = plResult.Next
 	return nil
 }
 

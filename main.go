@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
 )
 
@@ -19,7 +18,7 @@ type cliCommand struct {
 type pokeLocationResult struct {
 	Count    int    `json:"count"`
 	Next     string `json:"next"`
-	Previous any    `json:"previous"`
+	Previous string `json:"previous"`
 	Results  []struct {
 		Name string `json:"name"`
 		URL  string `json:"url"`
@@ -40,7 +39,7 @@ func main() {
 		} else {
 			err := s.callback()
 			if err != nil {
-				log.Fatal(err)
+				fmt.Print(err)
 			}
 		}
 		fmt.Printf("\n\nPokedex > ")
