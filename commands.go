@@ -5,59 +5,6 @@ import (
 	"os"
 )
 
-func commandExit() error {
-	os.Exit(0)
-	return nil
-}
-
-func commandHelp() error {
-	fmt.Println("\nWelcome to the Pokedex!\nUsage:")
-	fmt.Println()
-	for _, c := range getCommands() {
-		fmt.Printf("%v: %v\n", c.name, c.description)
-	}
-	return nil
-}
-
-func commandMap() error {
-	webResult, err := getApiResponse(nextMap)
-	if err != nil {
-		return fmt.Errorf("an error occured while getting API response: %s", err)
-	}
-	plResult, err := unmarshallPokeLocationResult(webResult)
-	if err != nil {
-		return fmt.Errorf("an error occured while serializing the json: %s", err)
-	}
-
-	for _, res := range plResult.Results {
-		println(res.Name)
-	}
-	prevMap = plResult.Previous
-	nextMap = plResult.Next
-	return nil
-}
-
-func commandMapb() error {
-	if prevMap == "" {
-		return fmt.Errorf("no previous location set exists. Please try using \"map\" at least twice before \"mapb\"")
-	}
-	webResult, err := getApiResponse(prevMap)
-	if err != nil {
-		return fmt.Errorf("an error occured while getting API response: %s", err)
-	}
-	plResult, err := unmarshallPokeLocationResult(webResult)
-	if err != nil {
-		return fmt.Errorf("an error occured while serializing the json: %s", err)
-	}
-
-	for _, res := range plResult.Results {
-		println(res.Name)
-	}
-	prevMap = plResult.Previous
-	nextMap = plResult.Next
-	return nil
-}
-
 func getCommands() map[string]cliCommand {
 	return map[string]cliCommand{
 		"help": {
@@ -81,4 +28,57 @@ func getCommands() map[string]cliCommand {
 			callback:    commandMapb,
 		},
 	}
+}
+
+func commandExit(cfg *config) error {
+	os.Exit(0)
+	return nil
+}
+
+func commandHelp(cfg *config) error {
+	fmt.Println("\nWelcome to the Pokedex!\nUsage:")
+	fmt.Println()
+	for _, c := range getCommands() {
+		fmt.Printf("%v: %v\n", c.name, c.description)
+	}
+	return nil
+}
+
+func commandMap(cfg *config) error {
+	webResult, err := getApiResponse(cfg.nextUrl)
+	if err != nil {
+		return fmt.Errorf("an error occured while getting API response: %s", err)
+	}
+	plResult, err := unmarshallPokeLocationResult(webResult)
+	if err != nil {
+		return fmt.Errorf("an error occured while serializing the json: %s", err)
+	}
+
+	for _, res := range plResult.Results {
+		println(res.Name)
+	}
+	cfg.prevUrl = plResult.Previous
+	cfg.nextUrl = plResult.Next
+	return nil
+}
+
+func commandMapb(cfg *config) error {
+	if cfg.prevUrl == "" {
+		return fmt.Errorf("no previous location set exists. Please try using \"map\" at least twice before \"mapb\"")
+	}
+	webResult, err := getApiResponse(cfg.prevUrl)
+	if err != nil {
+		return fmt.Errorf("an error occured while getting API response. Could be internet connection?: %s", err)
+	}
+	plResult, err := unmarshallPokeLocationResult(webResult)
+	if err != nil {
+		return fmt.Errorf("an error occured while serializing the json: %s", err)
+	}
+
+	for _, res := range plResult.Results {
+		println(res.Name)
+	}
+	cfg.prevUrl = plResult.Previous
+	cfg.nextUrl = plResult.Next
+	return nil
 }

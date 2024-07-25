@@ -6,13 +6,10 @@ import (
 	"os"
 )
 
-var nextMap string = "https://pokeapi.co/api/v2/location/"
-var prevMap string
-
 type cliCommand struct {
 	name        string
 	description string
-	callback    func() error
+	callback    func(*config) error
 }
 
 type pokeLocationResult struct {
@@ -25,11 +22,18 @@ type pokeLocationResult struct {
 	} `json:"results"`
 }
 
+type config struct {
+	nextUrl string `default:"https://pokeapi.co/api/v2/location/"`
+	prevUrl string
+}
+
 func main() {
 	fmt.Println("Welcome to Pokedex! For help, please type \"help\" without quotes.")
 	fmt.Println("To quit, simply type \"quit\"")
 	fmt.Println()
 	fmt.Printf("Pokedex > ")
+
+	cfg := config{nextUrl: "https://pokeapi.co/api/v2/location/"}
 	scanner := bufio.NewScanner(os.Stdin)
 	commandMap := getCommands()
 	for scanner.Scan() {
@@ -37,7 +41,7 @@ func main() {
 		if !ok {
 			fmt.Printf("unknown command: %v. See help for list of commands", scanner.Text())
 		} else {
-			err := s.callback()
+			err := s.callback(&cfg)
 			if err != nil {
 				fmt.Print(err)
 			}
