@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"pokedex/internal"
+	"time"
 )
 
 type cliCommand struct {
@@ -25,6 +27,7 @@ type pokeLocationResult struct {
 type config struct {
 	nextUrl string `default:"https://pokeapi.co/api/v2/location/"`
 	prevUrl string
+	cache   *internal.Cache
 }
 
 func main() {
@@ -33,7 +36,7 @@ func main() {
 	fmt.Println()
 	fmt.Printf("Pokedex > ")
 
-	cfg := config{nextUrl: "https://pokeapi.co/api/v2/location/"}
+	cfg := config{nextUrl: "https://pokeapi.co/api/v2/location/", cache: internal.NewCache(15 * time.Second)}
 	scanner := bufio.NewScanner(os.Stdin)
 	commandMap := getCommands()
 	for scanner.Scan() {
