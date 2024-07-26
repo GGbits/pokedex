@@ -37,11 +37,11 @@ func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	commandMap := getCommands()
 	for scanner.Scan() {
-		s, ok := commandMap[scanner.Text()]
+		cm, ok := commandMap[scanner.Text()]
 		if !ok {
 			fmt.Printf("unknown command: %v. See help for list of commands", scanner.Text())
 		} else {
-			err := s.callback(&cfg)
+			err := cm.callback(&cfg)
 			if err != nil {
 				fmt.Print(err)
 			}
