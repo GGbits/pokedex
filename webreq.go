@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 )
 
@@ -22,6 +23,21 @@ func getApiResponse(url string) ([]byte, error) {
 		return nil, fmt.Errorf("Response failed with status code: %d and\nbody:%s\n", res.StatusCode, body)
 	}
 	return body, nil
+}
+
+func queryCache(cfg *config, url string) ([]byte, error) {
+	webResult, ok := cfg.cache.Get(url)
+	if !ok {
+		log.Println("Missed cache, trying page directly..")
+		wr, err := getApiResponse(url)
+		if err != nil {
+			return nil, fmt.Errorf("an error occured while getting API response: %s", err)
+		}
+		log.Println("adding data to cache...")
+		cfg.cache.Add(url, wr)
+		webResult = wr
+	}
+	return webResult, nil
 }
 
 func unmarshallPokeLocationResult(jsonByteSlc []byte) (pokeLocationResult, error) {

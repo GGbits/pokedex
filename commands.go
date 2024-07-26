@@ -45,15 +45,9 @@ func commandHelp(cfg *config) error {
 }
 
 func commandMap(cfg *config) error {
-	//TODO: Make this a function
-	webResult, ok := cfg.cache.Get(cfg.nextUrl)
-	if !ok {
-		wr, err := getApiResponse(cfg.nextUrl)
-		if err != nil {
-			return fmt.Errorf("an error occured while getting API response: %s", err)
-		}
-		cfg.cache.Add(cfg.nextUrl, wr)
-		webResult = wr
+	webResult, err := queryCache(cfg, cfg.nextUrl)
+	if err != nil {
+		return err
 	}
 
 	plResult, err := unmarshallPokeLocationResult(webResult)
@@ -74,21 +68,11 @@ func commandMapb(cfg *config) error {
 		return fmt.Errorf("no previous location set exists. Please try using \"map\" at least twice before \"mapb\"")
 	}
 
-	//TODO: Make this a function
-	webResult, ok := cfg.cache.Get(cfg.prevUrl)
-	if !ok {
-		wr, err := getApiResponse(cfg.prevUrl)
-		if err != nil {
-			return fmt.Errorf("an error occured while getting API response: %s", err)
-		}
-		cfg.cache.Add(cfg.prevUrl, wr)
-		webResult = wr
+	webResult, err := queryCache(cfg, cfg.prevUrl)
+	if err != nil {
+		return err
 	}
 
-	webResult, err := getApiResponse(cfg.prevUrl)
-	if err != nil {
-		return fmt.Errorf("an error occured while getting API response. Could be internet connection?: %s", err)
-	}
 	plResult, err := unmarshallPokeLocationResult(webResult)
 	if err != nil {
 		return fmt.Errorf("an error occured while serializing the json: %s", err)
