@@ -5,30 +5,9 @@ import (
 	"fmt"
 	"os"
 	"pokedex/internal"
+	"strings"
 	"time"
 )
-
-type cliCommand struct {
-	name        string
-	description string
-	callback    func(*config) error
-}
-
-type pokeLocationResult struct {
-	Count    int    `json:"count"`
-	Next     string `json:"next"`
-	Previous string `json:"previous"`
-	Results  []struct {
-		Name string `json:"name"`
-		URL  string `json:"url"`
-	} `json:"results"`
-}
-
-type config struct {
-	nextUrl string `default:"https://pokeapi.co/api/v2/location/"`
-	prevUrl string
-	cache   *internal.Cache
-}
 
 func main() {
 	fmt.Println("Welcome to Pokedex! For help, please type \"help\" without quotes.")
@@ -36,19 +15,38 @@ func main() {
 	fmt.Println()
 	fmt.Printf("Pokedex > ")
 
-	cfg := config{nextUrl: "https://pokeapi.co/api/v2/location/", cache: internal.NewCache(15 * time.Second)}
+	cfg := config{
+		nextUrl:    "https://pokeapi.co/api/v2/location-area/",
+		locBaseUrl: "https://pokeapi.co/api/v2/location-area/",
+		cache:      internal.NewCache(15 * time.Second),
+	}
 	scanner := bufio.NewScanner(os.Stdin)
 	commandMap := getCommands()
 	for scanner.Scan() {
-		cm, ok := commandMap[scanner.Text()]
+		words := cleanInput(scanner.Text())
+		cm, ok := commandMap[words[0]]
 		if !ok {
 			fmt.Printf("unknown command: %v. See help for list of commands", scanner.Text())
 		} else {
-			err := cm.callback(&cfg)
-			if err != nil {
-				fmt.Print(err)
+			if len(words) == 1 {
+				err := cm.callback(&cfg)
+				if err != nil {
+					fmt.Print(err)
+				}
+			} else {
+				err := cm.callback(&cfg, words[1:]...)
+				if err != nil {
+					fmt.Print(err)
+				}
 			}
+
 		}
 		fmt.Printf("\n\nPokedex > ")
 	}
+}
+
+func cleanInput(readLine string) []string {
+	lower := strings.ToLower(readLine)
+	split := strings.Fields(lower)
+	return split
 }

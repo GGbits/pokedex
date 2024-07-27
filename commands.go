@@ -12,6 +12,11 @@ func getCommands() map[string]cliCommand {
 			description: "Exit the Pokedex",
 			callback:    commandExit,
 		},
+		"explore": {
+			name:        "explore [area]",
+			description: "Lists pokemon in an area",
+			callback:    commandExplore,
+		},
 		"help": {
 			name:        "help",
 			description: "Displays a help message",
@@ -30,12 +35,34 @@ func getCommands() map[string]cliCommand {
 	}
 }
 
-func commandExit(cfg *config) error {
+func commandExit(cfg *config, args ...string) error {
 	os.Exit(0)
 	return nil
 }
 
-func commandHelp(cfg *config) error {
+func commandExplore(cfg *config, args ...string) error {
+	if len(args) == 0 {
+		return fmt.Errorf("can't explore, no area provided. Please try 'explore [area name]'")
+	}
+	fmt.Printf("Exploring area %v...\n", args)
+	exploreUrl := cfg.locBaseUrl + args[0]
+	webResult, err := queryCache(cfg, exploreUrl)
+	if err != nil {
+		return err
+	}
+	exResult, err := unmarshallPokeExploreResult(webResult)
+	if err != nil {
+		return err
+	}
+	fmt.Println("Found the following pokemon...")
+	for i := 0; i < len(exResult.PokemonEncounters); i++ {
+		pokeName := exResult.PokemonEncounters[i].Pokemon.Name
+		fmt.Printf(" -  %v\n", pokeName)
+	}
+	return nil
+}
+
+func commandHelp(cfg *config, args ...string) error {
 	fmt.Println("\nWelcome to the Pokedex!\nUsage:")
 	fmt.Println()
 	for _, c := range getCommands() {
@@ -44,7 +71,7 @@ func commandHelp(cfg *config) error {
 	return nil
 }
 
-func commandMap(cfg *config) error {
+func commandMap(cfg *config, args ...string) error {
 	webResult, err := queryCache(cfg, cfg.nextUrl)
 	if err != nil {
 		return err
@@ -63,7 +90,7 @@ func commandMap(cfg *config) error {
 	return nil
 }
 
-func commandMapb(cfg *config) error {
+func commandMapb(cfg *config, args ...string) error {
 	if cfg.prevUrl == "" {
 		return fmt.Errorf("no previous location set exists. Please try using \"map\" at least twice before \"mapb\"")
 	}
