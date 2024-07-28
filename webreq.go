@@ -57,3 +57,12 @@ func unmarshallPokeExploreResult(jsonByteSlc []byte) (pokeExploreResult, error) 
 	}
 	return pExResult, nil
 }
+
+func unmarshallPokemonResult(jsonByteSlc []byte) (pokemonResult, error) {
+	pokeResult := pokemonResult{}
+	err := json.Unmarshal(jsonByteSlc, &pokeResult)
+	if err != nil {
+		return pokemonResult{}, fmt.Errorf("failed to convert json to explore data: %s", err)
+	}
+	return pokeResult, nil
+}

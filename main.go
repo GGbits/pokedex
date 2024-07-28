@@ -16,9 +16,11 @@ func main() {
 	fmt.Printf("Pokedex > ")
 
 	cfg := config{
-		nextUrl:    "https://pokeapi.co/api/v2/location-area/",
-		locBaseUrl: "https://pokeapi.co/api/v2/location-area/",
-		cache:      internal.NewCache(15 * time.Second),
+		nextUrl:       "https://pokeapi.co/api/v2/location-area/",
+		locBaseUrl:    "https://pokeapi.co/api/v2/location-area/",
+		pokeUrl:       "https://pokeapi.co/api/v2/pokemon/",
+		caughtPokemon: make(map[string]pokemonResult),
+		cache:         internal.NewCache(15 * time.Second),
 	}
 	scanner := bufio.NewScanner(os.Stdin)
 	commandMap := getCommands()

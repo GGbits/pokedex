@@ -2,11 +2,17 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 )
 
 func getCommands() map[string]cliCommand {
 	return map[string]cliCommand{
+		"catch": {
+			name:        "catch [pokemon]",
+			description: "Attempt to catch [pokemon]",
+			callback:    commandCatch,
+		},
 		"exit": {
 			name:        "exit",
 			description: "Exit the Pokedex",
@@ -33,6 +39,32 @@ func getCommands() map[string]cliCommand {
 			callback:    commandMapb,
 		},
 	}
+}
+
+func commandCatch(cfg *config, args ...string) error {
+	if len(args) == 0 {
+		return fmt.Errorf("could not catch a pokemon, no pokemon specified. Please try 'catch [pokemon]")
+	}
+	webResult, err := queryCache(cfg, cfg.pokeUrl+args[0])
+	if err != nil {
+		return err
+	}
+
+	pokeResult, err := unmarshallPokemonResult(webResult)
+	if err != nil {
+		return fmt.Errorf("an error occured while serializing the json: %s", err)
+	}
+
+	fmt.Printf("attempting to catch a %v\n", pokeResult.Name)
+	pExp := pokeResult.BaseExperience
+	rndInt := rand.Intn(500)
+	if rndInt > pExp {
+		fmt.Printf("You caught a %v\n", pokeResult.Name)
+		cfg.caughtPokemon[pokeResult.Name] = pokeResult
+	} else {
+		fmt.Printf("%v escaped...\n", pokeResult.Name)
+	}
+	return nil
 }
 
 func commandExit(cfg *config, args ...string) error {
