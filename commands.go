@@ -43,6 +43,11 @@ func getCommands() map[string]cliCommand {
 			description: "Gets last 20 locations",
 			callback:    commandMapb,
 		},
+		"pokedex": {
+			name:        "pokedex",
+			description: "returns a list of caught pokemon",
+			callback:    commandPokedex,
+		},
 	}
 }
 
@@ -161,5 +166,17 @@ func commandMapb(cfg *config, args ...string) error {
 	}
 	cfg.prevUrl = plResult.Previous
 	cfg.nextUrl = plResult.Next
+	return nil
+}
+
+func commandPokedex(cfg *config, args ...string) error {
+	if len(cfg.caughtPokemon) == 0 {
+		return fmt.Errorf("No data. You haven't caught any pokemon\n")
+	}
+
+	fmt.Println("Your Pokedex:")
+	for k, _ := range cfg.caughtPokemon {
+		fmt.Printf(" - %v\n", k)
+	}
 	return nil
 }
