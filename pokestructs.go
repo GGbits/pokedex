@@ -1,6 +1,9 @@
 package main
 
-import "pokedex/internal"
+import (
+	"fmt"
+	"pokedex/internal"
+)
 
 type cliCommand struct {
 	name        string
@@ -337,4 +340,39 @@ type pokemonResult struct {
 		} `json:"type"`
 	} `json:"types"`
 	Weight int `json:"weight"`
+}
+
+type pokemonInspectInfo struct {
+	Name   string
+	Height int
+	Weight int
+	Stats  map[string]int
+	Types  []string
+}
+
+func (pii *pokemonInspectInfo) print() {
+	fmt.Printf("Name: %v\nHeight: %v\nWeight: %v\nStats:\n", pii.Name, pii.Height, pii.Weight)
+	for k, v := range pii.Stats {
+		fmt.Printf("  -%v: %v\n", k, v)
+	}
+	fmt.Println("Types:")
+	for _, v := range pii.Types {
+		fmt.Printf("  - %v\n", v)
+	}
+}
+
+func newPokemonInspectInfo(result pokemonResult) pokemonInspectInfo {
+	pii := pokemonInspectInfo{
+		Name:   result.Name,
+		Height: result.Height,
+		Weight: result.Weight,
+		Stats:  map[string]int{},
+	}
+	for i := 0; i < len(result.Stats); i++ {
+		pii.Stats[result.Stats[i].Stat.Name] = result.Stats[i].BaseStat
+	}
+	for i := 0; i < len(result.Types); i++ {
+		pii.Types = append(pii.Types, result.Types[i].Type.Name)
+	}
+	return pii
 }

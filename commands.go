@@ -28,6 +28,11 @@ func getCommands() map[string]cliCommand {
 			description: "Displays a help message",
 			callback:    commandHelp,
 		},
+		"inspect": {
+			name:        "inspect [pokemon]",
+			description: "Displays stats for [pokemon]",
+			callback:    commandInspect,
+		},
 		"map": {
 			name:        "map",
 			description: "Gets next 20 locations",
@@ -74,7 +79,7 @@ func commandExit(cfg *config, args ...string) error {
 
 func commandExplore(cfg *config, args ...string) error {
 	if len(args) == 0 {
-		return fmt.Errorf("can't explore, no area provided. Please try 'explore [area name]'")
+		return fmt.Errorf("can't explore, no area provided. Please try 'explore [area name]'\n")
 	}
 	fmt.Printf("Exploring area %v...\n", args)
 	exploreUrl := cfg.locBaseUrl + args[0]
@@ -100,6 +105,20 @@ func commandHelp(cfg *config, args ...string) error {
 	for _, c := range getCommands() {
 		fmt.Printf("%v: %v\n", c.name, c.description)
 	}
+	return nil
+}
+
+func commandInspect(cfg *config, args ...string) error {
+	if len(args) == 0 {
+		return fmt.Errorf("can't Inspect, no pokemon provided. Please try 'explore [pokemon]'\n")
+	}
+
+	pr, ok := cfg.caughtPokemon[args[0]]
+	if !ok {
+		return fmt.Errorf("you haven't caught that pokemon yet, can't provide stats")
+	}
+	pokemon := newPokemonInspectInfo(pr)
+	pokemon.print()
 	return nil
 }
 
